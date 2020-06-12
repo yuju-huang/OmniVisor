@@ -1,0 +1,64 @@
+Explore if nbd_aio_notify_error is needed for faster response if
+server goes away.
+
+Bindings in other languages.
+ - Latest attempt at adding Rust:
+   https://www.redhat.com/archives/libguestfs/2019-August/msg00416.html
+
+Example code integrating with ppoll, pollfd, APR pollset (and others?).
+
+Example command line utils to copy in/out (like qemu-img convert).
+
+NBD_OPT_INFO mode (like qemu-nbd -L).
+
+NBD resize extension.
+
+NBD_INFO_BLOCK_SIZE.
+
+TLS should properly shut down the session (calling gnutls_bye).
+
+Performance: Chart it over various buffer sizes and threads, as that
+  should make it easier to identify systematic issues.
+
+Examine other fuzzers: https://gitlab.com/akihe/radamsa
+
+Should we ship a "nbdcp" copying tool?
+ - Could upload, download or copy between servers.
+ - Duplicates functionality already available in qemu-img convert.
+
+nbdfuse:
+ - If you write beyond the end of the virtual file, it returns EIO.
+ - Implement trim/discard.
+ - Implement write_zeroes.
+ - Implement block_status.
+ - Could be made multithreaded for improved performance.
+
+Suggested API improvements:
+  general:
+  - synchronous APIs that have a timeout or can be cancelled
+
+  connecting:
+  - nbd_connect_tcp: allow control over whether IPv4 or IPv6 is desired
+  - nbd_connect_uri: allow control over which features are enabled
+  - nbd_connect_command: allow passing char **env
+  - connection completed callback
+
+  TLS:
+  - should be individual APIs for setting each TLS file
+    (set_tls_certificates can continue to exist)
+  - TLS should have a way to pass in PIN or password to
+    support encrypted keys
+  - allow use of TLS memory APIs (gnutls_datum_t + gnutls_*_mem)
+  - support PKCS11 URIs (RFC 7512)
+
+  Easier server implementation testing:
+  - a way to force NBD_OPT_EXPORT_NAME over NBD_OPT_GO
+  - a way to forcefully violate protocol (such as allowing writes to a
+    readonly connection, or sending a request that exceeds bounds) for
+    testing server reactions
+
+  subprocess
+  - it should be possible to use nbd_close and never block, so
+    maybe nbd_shutdown should wait for the subprocess or there
+    should be another API to do this
+  - capture error message when nbd_connect_command fails

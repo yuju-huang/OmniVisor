@@ -1,0 +1,250 @@
+=head1 NAME
+
+nbdkit-curl-plugin - nbdkit curl plugin (HTTP, FTP and other protocols)
+
+=head1 SYNOPSIS
+
+ nbdkit -r curl [url=]http://example.com/disk.img
+
+=head1 DESCRIPTION
+
+C<nbdkit-curl-plugin> is a plugin for L<nbdkit(1)> which turns content
+served over HTTP, FTP, and more, into a Network Block Device.  It uses
+a library called libcurl (also known as cURL) to read data from URLs.
+The exact list of protocols that libcurl can handle depends on how it
+was compiled, but most versions will handle HTTP, HTTPS, FTP, FTPS and
+more (see: S<C<curl -V>>).
+
+B<Note:> This plugin supports writes.  However for HTTP, you may not
+want nbdkit to issue PUT requests to the remote server (which probably
+doesn't understand them).  To force nbdkit to use a readonly
+connection, pass the I<-r> flag.
+
+Although this plugin can access SFTP (ie. SSH) servers, it is much
+better to use L<nbdkit-ssh-plugin(1)>.
+
+=head1 EXAMPLE
+
+ nbdkit -r curl http://example.com/disk.img
+
+serves the remote disk image as NBD on TCP port 10809 (to control
+ports and protocols used to serve NBD see L<nbdkit(1)>).
+
+=head1 PARAMETERS
+
+=over 4
+
+=item B<cainfo=>FILENAME
+
+(nbdkit E<ge> 1.18)
+
+Configure CA bundle for libcurl. See L<CURLOPT_CAINFO(3)> for details.
+
+=item B<capath=>PATH
+
+(nbdkit E<ge> 1.18)
+
+Set CA certificates directory location for libcurl. See
+L<CURLOPT_CAPATH(3)> for more information.
+
+=item B<cookie=>COOKIE
+
+=item B<cookie=+>FILENAME
+
+=item B<cookie=->
+
+=item B<cookie=->FD
+
+(nbdkit E<ge> 1.12)
+
+Set a cookie in the request header when connecting to the remote
+server.
+
+A typical example is:
+
+ cookie='vmware_soap_session="52a01262-bf93-ccce-d379-8dabb3e55560"'
+
+This option can be used at most once.  It only works for HTTP and
+HTTPS transports.  To set multiple cookies you must concatenate them
+yourself, eg:
+
+ cookie='name1=content1; name2=content2;'
+
+See L<CURLOPT_COOKIE(3)> for more information about this.
+
+If the cookie is used for authentication then passing it on the
+command line is not secure on shared machines.  Use the alternate
+C<+FILENAME> syntax to pass it in a file, C<-> to read the cookie
+interactively, or C<-FD> to read it from a file descriptor.
+
+=item B<password=>PASSWORD
+
+Set the password to use when connecting to the remote server.
+
+Note that passing this on the command line is not secure on shared
+machines.
+
+=item B<password=->
+
+Ask for the password (interactively) when nbdkit starts up.
+
+=item B<password=+>FILENAME
+
+Read the password from the named file.  This is a secure method
+to supply a password, as long as you set the permissions on the file
+appropriately.
+
+=item B<password=->FD
+
+Read the password from file descriptor number C<FD>, inherited from
+the parent process when nbdkit starts up.  This is also a secure
+method to supply a password.
+
+=item B<protocols=>PROTO,PROTO,...
+
+(nbdkit E<ge> 1.12)
+
+Limit the protocols that are allowed in the URL.  Use this option for
+extra security if the URL comes from an untrusted source and you want
+to avoid security isues in the more obscure protocols that curl
+supports.  (See qemu CVE-2013-0249 for an example of a security bug
+introduced by allowing unrestricted protocols).
+
+For example if you only intend HTTP and HTTPS URLs to be used, then
+add this parameter: C<protocols=http,https>
+
+The value of this parameter is a comma-separated list of protocols.
+The following protocols are known: B<dict>, B<file>, B<ftp>, B<ftps>,
+B<gopher>, B<http>, B<https>, B<imap>, B<imaps>, B<ldap>, B<ldaps>,
+B<pop3>, B<pop3s>, B<rtmp>, B<rtmpe>, B<rtmps>, B<rtmpt>, B<rtmpte>,
+B<rtmpts>, B<rtsp>, B<scp>, B<sftp>, B<smb>, B<smbs>, B<smtp>,
+B<smtps>, B<telnet>, B<tftp>.
+
+The default is to allow any protocol.
+
+=item B<proxy=>PROXY
+
+(nbdkit E<ge> 1.20)
+
+Set the proxy.  See L<CURLOPT_PROXY(3)>.
+
+=item B<proxy-password=>PASSWORD
+
+=item B<proxy-password=->
+
+=item B<proxy-password=+>FILENAME
+
+=item B<proxy-password=->FD
+
+=item B<proxy-user=>USERNAME
+
+(nbdkit E<ge> 1.12)
+
+Set the proxy username and password.
+
+=item B<sslverify=false>
+
+Don't verify the SSL certificate of the remote host.
+
+=item B<tcp-keepalive=true>
+
+(nbdkit E<ge> 1.20)
+
+Enable TCP keepalives.
+
+=item B<tcp-nodelay=false>
+
+(nbdkit E<ge> 1.20)
+
+Disable Nagle’s algorithm.
+
+=item B<timeout=>SECS
+
+Set the timeout for requests.
+
+=item B<timeout=0>
+
+Use the default libcurl timeout for requests.
+
+=item B<unix-socket-path=>PATH
+
+(nbdkit E<ge> 1.10)
+
+Instead of using a TCP connection, connect to the server over the
+named Unix domain socket.  See L<CURLOPT_UNIX_SOCKET_PATH(3)>.
+
+=item [B<url=>]URL
+
+The URL of the remote disk image.  This is passed to libcurl directly
+via L<CURLOPT_URL(3)>.
+
+This parameter is required.
+
+C<url=> is a magic config key and may be omitted in most cases.
+See L<nbdkit(1)/Magic parameters>.
+
+=item B<user=>USERNAME
+
+Set the username to use when connecting to the remote server.  This
+may also be set in the URL (eg. C<http://foo@example.com/disk.img>)
+
+=back
+
+=head1 DEBUG FLAG
+
+=over 4
+
+=item B<-D curl.verbose=1>
+
+This enables very verbose curl debugging.  See L<CURLOPT_VERBOSE(3)>.
+This is mainly useful if you suspect there is a bug inside libcurl
+itself.
+
+=back
+
+=head1 FILES
+
+=over 4
+
+=item F<$plugindir/nbdkit-curl-plugin.so>
+
+The plugin.
+
+Use C<nbdkit --dump-config> to find the location of C<$plugindir>.
+
+=back
+
+=head1 VERSION
+
+C<nbdkit-curl-plugin> first appeared in nbdkit 1.2.
+
+=head1 SEE ALSO
+
+L<curl(1)>,
+L<libcurl(3)>,
+L<CURLOPT_CAINFO(3)>,
+L<CURLOPT_CAPATH(3)>,
+L<CURLOPT_COOKIE(3)>,
+L<CURLOPT_PROXY(3)>,
+L<CURLOPT_TCP_KEEPALIVE(3)>,
+L<CURLOPT_TCP_NODELAY(3)>,
+L<CURLOPT_URL(3)>,
+L<CURLOPT_UNIX_SOCKET_PATH(3)>,
+L<CURLOPT_VERBOSE(3)>,
+L<nbdkit(1)>,
+L<nbdkit-extentlist-filter(1)>,
+L<nbdkit-readahead-filter(1)>,
+L<nbdkit-retry-filter(1)>,
+L<nbdkit-ssh-plugin(1)>,
+L<nbdkit-plugin(3)>,
+L<http://curl.haxx.se>.
+
+=head1 AUTHORS
+
+Richard W.M. Jones
+
+Parts derived from Alexander Graf's "QEMU Block driver for CURL images".
+
+=head1 COPYRIGHT
+
+Copyright (C) 2014-2020 Red Hat Inc.

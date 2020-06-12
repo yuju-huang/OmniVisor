@@ -1,0 +1,293 @@
+To-do list for nbdkit
+======================================================================
+
+General ideas for improvements
+------------------------------
+
+* Listen on specific interfaces or protocols.
+
+* Performance - measure and improve it.  Chart it over various buffer
+  sizes and threads, as that should make it easier to identify
+  systematic issues.
+
+* For parallel plugins, only create threads on demand from parallel
+  client requests, rather than pre-creating all threads at connection
+  time, up to the thread pool size limit.  Of course, once created, a
+  thread is reused as possible until the connection closes.
+
+* Async callbacks.  The current parallel support requires one thread
+  per pending message; a solution with fewer threads would split
+  low-level code between request and response, where the callback has
+  to inform nbdkit when the response is ready:
+  https://www.redhat.com/archives/libguestfs/2018-January/msg00149.html
+
+* More NBD protocol features.  The currently missing features are
+  structured replies for sparse reads, block size constraints, and
+  online resize.
+
+* Add a callback to let plugins request minimum alignment for the
+  buffer to pread/pwrite; useful for a plugin utilizing O_DIRECT or
+  other situation where pre-aligned buffers are more efficient.
+  Ideally, a blocksize filter would honor strict alignment below and
+  advertise loose alignment above; all other filters (particularly
+  ones like offset) can fail to initialize if they can't guarantee
+  strict alignment and don't want to deal with bounce buffers.
+
+* Test that zero-length read/write/extents requests behave sanely
+  (NBD protocol says they are unspecified).
+
+* If a client negotiates structured replies, and issues a read/extents
+  call that exceeds EOF (qemu 3.1 is one such client, when nbdkit
+  serves non-sector-aligned images), return the valid answer for the
+  subset of the request in range and then NBD_REPLY_TYPE_ERROR_OFFSET
+  for the tail, rather than erroring the entire request.
+
+* Test and document how to run nbdkit from inetd and xinetd in
+  nbdkit-service(1).
+
+* Audit the code base to get rid of strerror() usage (the function is
+  not thread-safe); however, using geterror_r() can be tricky as it
+  has a different signature in glibc than in POSIX.
+
+* Teach nbdkit_error() to have smart newline appending (for existing
+  inconsistent clients), while fixing internal uses to omit the
+  newline. Commit ef4f72ef has some ideas on smart newlines, but that
+  should probably be factored into a utility function.
+
+* Add a mode of operation where nbdkit is handed a pre-opened fd to be
+  used immediately in transmission phase (skipping handshake).  There
+  are already third-party clients of the kernel's /dev/nbdX which rely
+  on their own protocol instead of NBD handshake, before calling
+  ioctl(NBD_SET_SOCK); this mode would let the third-party client
+  continue to keep their non-standard handshake while utilizing nbdkit
+  to prototype new behaviors in serving the kernel.
+
+* Clients should be able to list export names supported by plugins.
+  Current behaviour is not really correct: We only list the -e
+  parameter from the command line, which is different from the export
+  name(s) that a plugin might want to support.  Probably we should
+  deprecate the -e option entirely since it does nothing useful.
+
+* Background thread for filters.  Some filters (readahead, cache and
+  proposed scan filter - see below) could be more effective if they
+  were able to defer work to a background thread.  However it's not as
+  simple as just creating a background thread, because you only have
+  access to the connection / next_ops from the context of a filter
+  callback.  (Also you can't "save" next_ops because it becomes
+  invalid outside the callback).  The background thread would need to
+  have its own connection to the plugin, which would be independent of
+  any client connection, and this requires some care because it breaks
+  an existing assumption.
+
+* Add scan filter.  This would be placed on top of cache filters and
+  would scan (read) the whole disk in the background, ensuring it is
+  copied into the cache.  Useful if you have a slow plugin, limited
+  size device, and lots of local disk space, especially if you know
+  that the NBD clients will eventually read all of the device.  RWMJ
+  wrote an implementation of this but it doesn't work well without a
+  background thread.
+
+* "nbdkit.so": nbdkit as a loadable shared library.  The aim of nbdkit
+  is to make it reusable from other programs (see nbdkit-captive(1)).
+  If it was a loadable shared library it would be even more reusable.
+  API would allow you to create an nbdkit instance, configure it (same
+  as the current command line), start it serving on a socket, etc.
+  However perhaps the current ability to work well as a subprocess is
+  good enough?  Also allowing multiple instances of nbdkit to be
+  loaded in the same process is probably impossible.
+
+* Examine other fuzzers: https://gitlab.com/akihe/radamsa
+
+* common/utils/vector.h could be extended and used in other places:
+  - there are some more possible places in the server (anywhere using
+    realloc is suspect)
+  - add more iterators, map function, etc, as required.
+
+* password=- to mean read a password interactively from /dev/tty (not
+  stdin).
+
+Suggestions for plugins
+-----------------------
+
+Note: qemu supports other formats such as libnfs, iscsi, gluster and
+ceph/rbd, and while similar plugins could be written for nbdkit there
+is no compelling reason unless the result is better than qemu-nbd.
+For the majority of users it would be better if they were directed to
+qemu-nbd for these use cases.
+
+* XVA files
+
+  https://lists.gnu.org/archive/html/qemu-devel/2017-11/msg02971.html
+  is a partial solution but it needs cleaning up.
+
+nbdkit-floppy-plugin:
+
+* Add boot sector support.  In theory this is easy (eg. using
+  SYSLINUX), but the practical reality of making a fully bootable
+  floppy is rather more complex.
+
+* Add multiple dir merging.
+
+nbdkit-linuxdisk-plugin:
+
+* Add multiple dir merging (in e2fsprogs mke2fs).
+
+VDDK:
+
+* Map export name to file parameter, allowing clients to access
+  multiple disks from a single VM.
+
+Suggestions for language plugins
+--------------------------------
+
+Python:
+
+* Get the __docstring__ from the module and print it in --help output.
+  This requires changes to the core API so that config_help is a
+  function rather than a variable (see V3 suggestions below).
+
+Rust:
+
+* Consider supporting a more idiomatic style for writing Rust plugins.
+
+* Better documentation.
+
+* Add tests.
+
+* There is no attempt to ‘make install’ or otherwise package the
+  crate.  Since it looks as if Rust code is normally distributed as
+  source it's not clear what that would even mean.
+
+Suggestions for filters
+-----------------------
+
+* tar plugin should really be a filter
+
+* gzip plugin should really be a filter
+
+* libarchive could be used to implement a general tar/zip filter
+
+* LUKS encrypt/decrypt filter, bonus points if compatible with qemu
+  LUKS-encrypted disk images
+
+* masking plugin features for testing clients (see 'nozero' and 'fua'
+  filters for examples)
+
+* nbdkit-cache-filter should handle ENOSPC errors automatically by
+  reclaiming blocks from the cache
+
+* zstd filter was requested as a way to do what we currently do with
+  xz but saving many hours on compression (at the cost of hundreds of
+  MBs of extra data)
+  https://github.com/facebook/zstd/issues/395#issuecomment-535875379
+
+* nbdkit-exitlast-filter could probably use a configurable timeout so
+  that there is a grace period in case another connection comes along.
+
+nbdkit-rate-filter:
+
+* allow other kinds of traffic shaping such as VBR
+
+* limit traffic per client (ie. per IP address)
+
+* split large requests to avoid long, lumpy sleeps when request size
+  is much larger than rate limit
+
+nbdkit-retry-filter:
+
+* allow user to specify which errors cause a retry and which ones are
+  passed through; for example there's probably no point retrying on
+  ENOMEM
+
+* implement a softer mode (retry-reopen=no) where we don't reopen the
+  plugin, we just retry the data command that failed
+
+* there are all kinds of extra complications possible here,
+  eg. specifying a pattern of retrying and reopening:
+  retry-method=RRRORRRRRORRRRR meaning to retry the data command 3
+  times, reopen, retry 5 times, etc.
+
+* subsecond times
+
+nbdkit-ip-filter:
+
+* permit hostnames and hostname wildcards to be used in the
+  allow and deny lists
+
+* the allow and deny lists should be updatable while nbdkit is
+  running, for example by storing them in a database file
+
+nbdkit-extentlist-filter:
+
+* read the extents generated by qemu-img map, allowing extents to be
+  ported from a qemu block device
+
+* make non-read-only access safe by updating the extent list when the
+  filter sees writes and trims
+
+Filters for security
+--------------------
+
+Things like blacklisting or whitelisting IP addresses can be done
+using external wrappers (TCP wrappers, systemd), or nbdkit-ip-filter.
+
+However it might be nice to have a configurable filter for preventing
+valid but not sensible requests.  The server already filters invalid
+requests.  This would be like seccomp, and could be implemented using
+an eBPF-based parser.  Unfortunately actual eBPF is difficult to use
+for userspace processes.  The "standard" isn't solidly defined - the
+Linux kernel implementation is the standard - and Linux has by far the
+best implementation, particularly around bytecode verification and
+JITting.  There is a userspace VM (ubpf) but it has very limited
+capabilities compared to Linux.
+
+Composing nbdkit
+----------------
+
+Filters allow certain types of composition, but others would not be
+possible, for example RAIDing over multiple nbd sources.  Because the
+plugin API limits us to loading a single plugin to the server, the
+best way to do this (and the most robust) is to compose multiple
+nbdkit processes.  Perhaps libnbd will prove useful for this purpose.
+
+Build-related
+-------------
+
+* Figure out how to get 'make distcheck' working. VPATH builds are
+  working, but various pkg-config results that try to stick
+  bash-completion and ocaml add-ons into their system-wide home do
+  not play nicely with --prefix builds for a non-root user.
+
+* Port to Windows.
+
+V3 plugin protocol
+------------------
+
+From time to time we may update the plugin protocol.  This section
+collects ideas for things which might be fixed in the next version of
+the protocol.
+
+Note that we keep the old protocol(s) around so that source
+compatibility is retained.  Plugins must opt in to the new protocol
+using ‘#define NBDKIT_API_VERSION <version>’.
+
+* All methods taking a ‘count’ field should be uint64_t (instead of
+  uint32_t).  Although the NBD protocol does not support 64 bit
+  lengths, it might do in future.
+
+* pread could be changed to allow it to support Structured Replies
+  (SRs).  This could mean allowing it to return partial data, holes,
+  zeroes, etc.  For a client that negotiates SR coupled with a plugin
+  that supports .extents, the v2 protocol would allow us to at least
+  synthesize NBD_REPLY_TYPE_OFFSET_HOLE for less network traffic, even
+  though the plugin will still have to fully populate the .pread
+  buffer; the v3 protocol should make sparse reads more direct.
+
+* Parameters should be systematized so that they aren't just (key,
+  value) strings.  nbdkit should know the possible keys for the plugin
+  and filters, and the type of the values, and both check and parse
+  them for the plugin.
+
+* Modify open() API so it takes an export name parameter.
+
+* Change config_help from a variable to a function.

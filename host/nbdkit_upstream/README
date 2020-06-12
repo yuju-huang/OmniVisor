@@ -1,0 +1,286 @@
+NBD — Network Block Device — is a protocol for accessing Block Devices
+(hard disks and disk-like things) over a Network.
+
+nbdkit is a toolkit for creating NBD servers.
+
+The key features are:
+
+ * Multithreaded NBD server written in C with good performance.
+
+ * Minimal dependencies for the basic server.
+
+ * Liberal license (BSD) allows nbdkit to be linked to proprietary
+   libraries or included in proprietary code.
+
+ * Well-documented, simple plugin API with a stable ABI guarantee.
+   Lets you export “unconventional” block devices easily.
+
+ * You can write plugins in C, Go, Lua, Perl, Python, OCaml, Ruby,
+   Rust, shell script or Tcl.
+
+ * Filters can be stacked in front of plugins to transform the output.
+
+For documentation, see the ‘docs/’ directory.
+
+For plugins, examples and filters, see the ‘plugins/’ and ‘filters/’
+directories.
+
+LICENSE
+=======
+
+This software is copyright (C) Red Hat Inc. and licensed under a BSD
+license.  See ‘LICENSE’ for details.
+
+BUILDING FROM SOURCE
+====================
+
+Requirements
+------------
+
+To build the basic server and some plugins nbdkit needs nothing except
+Linux, FreeBSD or OpenBSD, and:
+
+ - GCC or Clang
+
+ - bash
+
+ - GNU make
+
+Although it is possible to build without it, it’s recommended to
+enable TLS (authentication and encryption) support for which you will
+need:
+
+ - gnutls >= 3.3.0
+
+Optional dependencies
+---------------------
+
+To build the man pages, you will optionally need to install:
+
+ - Perl
+
+ - Pod::Man and Pod::Simple (Perl libraries)
+
+For SELinux socket labelling support:
+
+ - libselinux
+
+For the gzip plugin:
+
+ - zlib
+
+For the xz filter:
+
+ - liblzma
+
+For the curl (HTTP/FTP) plugin:
+
+ - libcurl
+
+For the ssh plugin:
+
+ - libssh >= 0.8.0
+   (this is a different library from libssh2 - that will not work)
+
+For the iso plugin:
+
+ - genisoimage or mkisofs
+
+For the floppy plugin:
+
+ - iconv (on Linux this is built into glibc, on other systems
+   it may be a separate library)
+
+For the libvirt plugin:
+
+ - libvirt
+
+For the libguestfs plugin, and to run parts of the test suite:
+
+ - libguestfs
+
+ - guestfish (from libguestfs)
+
+For the ext2 filter:
+
+ - ext2fs
+
+ - com_err
+
+For the linuxdisk plugin:
+
+ - mke2fs >= 1.42.10 (from e2fsprogs)
+
+For the nbd plugin, to get URI and TLS support, and also to run parts
+of the test suite:
+
+ - libnbd >= 0.9.8
+
+For the Perl, example4 and tar plugins:
+
+ - perl interpreter
+
+ - perl development libraries
+
+ - perl modules ExtUtils::Embed, IO::File and Cwd
+
+For the Python plugin:
+
+ - python interpreter (version 3 only)
+
+ - python development libraries
+
+ - python unittest to run the test suite
+
+For the OCaml plugin:
+
+ - OCaml >= 4.02.2
+
+For the Tcl plugin:
+
+ - Tcl development library and headers
+
+For the Lua plugin:
+
+ - Lua development library and headers
+
+For the Rust plugin:
+
+ - cargo (other dependencies will be downloaded at build time)
+
+To be able to write plugins in golang:
+
+ - go >= 1.5
+
+For bash tab completion:
+
+ - bash-completion >= 1.99
+
+To test for memory leaks (‘make check-valgrind’):
+
+ - valgrind program and development headers
+
+For non-essential enhancements to the test suite:
+
+ - expect
+
+ - ip, ss (from iproute package)
+
+ - jq
+
+ - losetup (from util-linux package)
+
+ - mke2fs (from e2fsprogs)
+
+ - nbdsh (from libnbd)
+
+ - qemu-img, qemu-io, qemu-nbd (usually shipped with qemu)
+
+ - sfdisk (from util-linux)
+
+ - socat
+
+ - ssh-keygen
+
+ - stat (from coreutils)
+
+Building
+--------
+
+    To build from tarball:         To build from git:
+    ----------------------         ------------------
+                                   autoreconf -i
+    ./configure                    ./configure
+    make                           make
+    make check                     make check
+
+To run nbdkit from the source directory, use the top level ./nbdkit
+wrapper.  It will run nbdkit and plugins from the locally compiled
+directory:
+
+    $ ./nbdkit example1 -f -v
+    ./server/nbdkit ./plugins/example1/.libs/nbdkit-example1-plugin.so -f -v
+    [etc]
+
+Optionally run this command as root to install everything:
+
+    make install
+
+Python
+------
+
+Since nbdkit >= 1.16, only Python >= 3.3 is supported.
+
+By default nbdkit uses the Python version of the Python interpreter
+called “python” on the current $PATH.  If you have parallel versions
+of Python installed then you can choose a different version by setting
+the PYTHON variable when configuring.  For example:
+
+    ./configure PYTHON=/usr/bin/python3.8
+
+Running the tests
+-----------------
+
+To run the test suite:
+
+    make check
+
+If there is a failure, look at the corresponding ‘tests/*.log’ file
+for debug information.
+
+A few tests require root privileges, and are skipped by default.  To
+run them you must do:
+
+    sudo make check-root
+
+If you have the proprietary VDDK library, you can test
+nbdkit-vddk-plugin against the library like this:
+
+    make check-vddk vddkdir=vmware-vix-disklib-distrib
+
+DOWNLOAD TARBALLS
+=================
+
+Tarballs are available from:
+http://libguestfs.org/download/nbdkit
+
+DEVELOPERS
+==========
+
+Install the valgrind program and development headers.
+
+Use:
+
+    ./configure --enable-gcc-warnings --enable-valgrind
+
+When testing use:
+
+    make check
+    make check-valgrind
+
+For development ideas, see the TODO file.
+
+The upstream git repository is:
+https://github.com/libguestfs/nbdkit
+
+Please send patches to the libguestfs mailing list:
+https://www.redhat.com/mailman/listinfo/libguestfs
+
+For further information, see:
+http://libguestfs.org/
+https://github.com/NetworkBlockDevice/nbd/blob/master/doc/proto.md
+
+Test coverage
+-------------
+
+    ./configure CFLAGS="--coverage -g" LDFLAGS="--coverage -g"
+    make clean
+    make
+    make check
+
+    lcov -c -d . -o gcov.info
+    genhtml -o coverage gcov.info
+
+Open your browser and examine the coverage/ directory.  At the time of
+writing (2020-04) test coverage of the server is reasonable, but
+things are much worse for certain plugins and filters.
