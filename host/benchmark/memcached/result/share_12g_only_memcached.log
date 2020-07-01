@@ -1,0 +1,60 @@
+#reqs/s: hit		target
+         20008.460088	20000.000000	
+
+service: min	avg		std		99th	99.9th	max
+         36	3853.527473	9948.977802	46243	122641	160633
+
+ buffer: min	avg		std		99th	99.9th	max
+         0	4.692562	2.971657	14	31	745
+
+RX: 74.25 MB/s (8906.03 MB)
+TX: 0.86 MB/s (103.00 MB)
+Missed sends: 32333 / 2798393 (1.1554%)
+#reqs/s: hit		target
+         20011.833848	20000.000000	
+
+service: min	avg		std		99th	99.9th	max
+         36	1835.873887	4281.155870	21902	41994	83692
+
+ buffer: min	avg		std		99th	99.9th	max
+         1	4.400330	2.450709	11	25	853
+
+RX: 71.90 MB/s (8622.86 MB)
+TX: 0.86 MB/s (103.00 MB)
+Missed sends: 25028 / 2799630 (0.8940%)
+#reqs/s: hit		target
+         19980.178579	20000.000000	
+
+service: min	avg		std		99th	99.9th	max
+         35	1603.404410	4106.446761	21469	42971	79720
+
+ buffer: min	avg		std		99th	99.9th	max
+         0	4.377033	2.513524	11	25	797
+
+RX: 70.58 MB/s (8478.52 MB)
+TX: 0.86 MB/s (103.00 MB)
+Missed sends: 12928 / 2799370 (0.4618%)
+#reqs/s: hit		target
+         20004.052690	20000.000000	
+
+service: min	avg		std		99th	99.9th	max
+         35	1788.177748	4611.040070	23419	50047	116551
+
+ buffer: min	avg		std		99th	99.9th	max
+         0	4.295120	2.410248	11	25	206
+
+RX: 72.86 MB/s (8741.96 MB)
+TX: 0.86 MB/s (103.00 MB)
+Missed sends: 13040 / 2799690 (0.4658%)
+#reqs/s: hit		target
+         20006.844528	20000.000000	
+
+service: min	avg		std		99th	99.9th	max
+         34	1329.624195	3288.101364	17226	34609	63998
+
+ buffer: min	avg		std		99th	99.9th	max
+         0	4.302499	2.413439	10	24	936
+
+RX: 68.62 MB/s (8231.64 MB)
+TX: 0.86 MB/s (103.00 MB)
+Missed sends: 13452 / 2801197 (0.4802%)

@@ -1,0 +1,66 @@
+gic4107@YuJu-Ubuntu:~/OmniVisor/host/benchmark/memcached$ /home/gic4107/mutated/out/bin/mutated_memcache -k 20 -z 1000000 -v 4096 -u 0 10.147.8.2:11211 -s 120 40000 -n 16 -w 10 -c 10   # Get (4G data)
+#reqs/s: hit            target
+         40009.326201   40000.000000
+
+service: min    avg             std             99th    99.9th  max
+         41     140193.797399   349098.277810   1906901 3233400 4006221
+
+ buffer: min    avg             std             99th    99.9th  max
+         0      11009.655579    110192.505061   387124  1634445 3260803
+
+RX: 147.63 MB/s (17711.45 MB)
+TX: 1.68 MB/s (201.42 MB)
+Missed sends: 21798 / 5599276 (0.3893%)
+gic4107@YuJu-Ubuntu:~/OmniVisor/host/benchmark/memcached$ /home/gic4107/mutated/out/bin/mutated_memcache -k 20 -z 1000000 -v 4096 -u 0 10.147.8.2:11211 -s 120 40000 -n 16 -w 10 -c 10   # Get (4G data)
+#reqs/s: hit            target
+         39921.720072   40000.000000
+
+service: min    avg             std             99th    99.9th  max
+         36     35158.285407    53169.602873    298327  631199  948606
+
+ buffer: min    avg             std             99th    99.9th  max
+         0      1.214957        1.910863        7       19      77
+
+RX: 150.32 MB/s (18073.75 MB)
+TX: 1.68 MB/s (201.42 MB)
+Missed sends: 18923 / 5600098 (0.3379%)
+gic4107@YuJu-Ubuntu:~/OmniVisor/host/benchmark/memcached$ /home/gic4107/mutated/out/bin/mutated_memcache -k 20 -z 1000000 -v 4096 -u 0 10.147.8.2:11211 -s 120 40000 -n 16 -w 10 -c 10   # Get (4G data)
+#reqs/s: hit            target
+         39973.862862   40000.000000
+
+service: min    avg             std             99th    99.9th  max
+         42     52434.471788    99616.489259    585004  1065498 1727625
+
+ buffer: min    avg             std             99th    99.9th  max
+         0      239.942071      9685.645982     7       28      743461
+
+RX: 153.00 MB/s (18371.48 MB)
+TX: 1.68 MB/s (201.42 MB)
+Missed sends: 24029 / 5599533 (0.4291%)
+gic4107@YuJu-Ubuntu:~/OmniVisor/host/benchmark/memcached$ /home/gic4107/mutated/out/bin/mutated_memcache -k 20 -z 1000000 -v 4096 -u 0 10.147.8.2:11211 -s 120 40000 -n 16 -w 10 -c 10   # Get (4G data)
+#reqs/s: hit            target
+         40008.344826   40000.000000
+
+service: min    avg             std             99th    99.9th  max
+         39     41747.463819    91664.252134    523305  1039302 1399457
+
+ buffer: min    avg             std             99th    99.9th  max
+         0      120.373825      6263.740816     9       22      582714
+
+RX: 147.45 MB/s (17690.09 MB)
+TX: 1.68 MB/s (201.42 MB)
+Missed sends: 22007 / 5599213 (0.3930%)
+gic4107@YuJu-Ubuntu:~/OmniVisor/host/benchmark/memcached$ /home/gic4107/mutated/out/bin/mutated_memcache -k 20 -z 1000000 -v 4096 -u 0 10.147.8.2:11211 -s 120 40000 -n 16 -w 10 -c 10   # Get (4G data)
+#reqs/s: hit            target
+         39977.664296   40000.000000
+
+service: min    avg             std             99th    99.9th  max
+         43     38937.131096    65681.739523    336937  834913  1298423
+
+ buffer: min    avg             std             99th    99.9th  max
+         0      71.066173       4254.656777     7       20      430800
+
+RX: 151.38 MB/s (18175.74 MB)
+TX: 1.68 MB/s (201.42 MB)
+Missed sends: 20842 / 5600287 (0.3722%)
+
