@@ -1,0 +1,7 @@
+rw=read
+direct=1
+numjobs=1
+loops=10
+size=1G
+ioengine=libaio
+iodepth=16

@@ -1,0 +1,5 @@
+[global]
+include fio-seq-read.fio
+
+[block=8k]
+bs=8K
