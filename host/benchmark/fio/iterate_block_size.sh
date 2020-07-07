@@ -2,8 +2,14 @@
 
 # REF: http://blog.vmsplice.net/2017/11/common-disk-benchmarking-mistakes.html
 
+FIO=$HOME/OmniVisor/host/fio_upstream/out/bin/fio
+
 LIBNBD_PATH=/usr/local/lib/
-URI="nbd://10.147.6.146:9999"
+
+ETHERNET_ADDR=nbd://128.84.139.15:9999
+INFINIBAND_ADDR=nbd://192.168.99.21:9999
+HDD_PATH=$HOME/OmniVisor/host/benchmark/fio/fio-tmp/
+SSD_PATH=/mnt/sdb
 
 LOOP=10
 IODEPTH=16
@@ -19,7 +25,7 @@ READ_WRITES="read write randread randwrite"
 # Benchmark both SSD and HDD.
 test_normal() {
 # Used to iterate different block device.
-DIRECTORYS="/home/gic4107/OmniVisor/host/benchmark/fio/fio-tmp/ /home/gic4107/Data/fio-tmp/"
+DIRECTORYS="$SSD_PATH $HDD_PATH"
 
 for DIRECTORY in $DIRECTORYS
 do
@@ -30,7 +36,7 @@ do
         do
             NAME=${RW}_${BS}
             echo "name="$NAME
-            LD_LIBRARY_PATH=$LIBNBD_PATH fio --directory=$DIRECTORY --name=$NAME --direct=1 --ramp_time=$WARMUP_TIME --time_based=1 --runtime=$TIME --rw=$RW --direct=$DIRECT --loops=$LOOP --size=$SIZE --ioengine=$IOENGINE --iodepth=$IODEPTH --bs=$BS
+            LD_LIBRARY_PATH=$LIBNBD_PATH $FIO --directory=$DIRECTORY --name=$NAME --direct=1 --ramp_time=$WARMUP_TIME --time_based=1 --runtime=$TIME --rw=$RW --direct=$DIRECT --loops=$LOOP --size=$SIZE --ioengine=$IOENGINE --iodepth=$IODEPTH --bs=$BS
             rm ${DIRECTORY}/${NAME}.0.0
         done
     done
@@ -39,14 +45,19 @@ done
 
 # Benchmark NBD.
 test_nbd() {
-echo "path=nbd"
-for RW in $READ_WRITES
+URIS="$ETHERNET_ADDR $INFINIBAND_ADDR"
+
+for URI in $URIS
 do
-    for BS in $BLOCK_SIZES
+    echo "path="$URI
+    for RW in $READ_WRITES
     do
-        NAME=${RW}_${BS}
-        echo "name="$NAME
-        LD_LIBRARY_PATH=$LIBNBD_PATH fio --name=$NAME --direct=1 --ramp_time=$WARMUP_TIME --time_based=1 --runtime=$TIME --rw=$RW --direct=$DIRECT --loops=$LOOP --size=$SIZE --ioengine=nbd --iodepth=$IODEPTH --bs=$BS --uri=$URI
+        for BS in $BLOCK_SIZES
+        do
+            NAME=${RW}_${BS}
+            echo "name="$NAME
+            LD_LIBRARY_PATH=$LIBNBD_PATH $FIO --name=$NAME --direct=1 --ramp_time=$WARMUP_TIME --time_based=1 --runtime=$TIME --rw=$RW --direct=$DIRECT --loops=$LOOP --size=$SIZE --ioengine=nbd --iodepth=$IODEPTH --bs=$BS --uri=$URI
+        done
     done
 done
 }
