@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GENERATOR=/home/gic4107/mutated/out/bin/mutated_memcache
+GENERATOR=$HOME/OmniVisor/host/mutated/out/bin/mutated_memcache
 IP=127.0.0.1
 PORT=4441
 
@@ -18,9 +18,9 @@ GET_TIME=30
 GET_RPS=80000
     echo "cmd=get"
     if [ $DATASET_SIZE -eq "4G" ]; then
-        EXEC="/home/gic4107/mutated/out/bin/mutated_memcache -k 20 -z 1000000 -v 4096 -u 0.1 127.0.0.1:4441 -s $GET_TIME $GET_RPS -n 16 # Get (4G data)"
+        EXEC="$HOME/OmniVisor/host/mutated/out/bin/mutated_memcache -k 20 -z 1000000 -v 4096 -u 0.1 127.0.0.1:4441 -s $GET_TIME $GET_RPS -n 16 # Get (4G data)"
     elif [ $DATASET_SIZE -eq "8G" ]; then
-        EXEC="/home/gic4107/mutated/out/bin/mutated_memcache -k 21 -z 2000000 -v 4096 -u 0.1 127.0.0.1:4441 -s $GET_TIME $GET_RPS -n 16 # Get (8G data)"
+        EXEC="$HOME/OmniVisor/host/mutated/out/bin/mutated_memcache -k 21 -z 2000000 -v 4096 -u 0.1 127.0.0.1:4441 -s $GET_TIME $GET_RPS -n 16 # Get (8G data)"
     else
         echo "not supported dataset size"
         exit 1
@@ -41,9 +41,9 @@ set() {
 SET_RPS=40000
     echo "cmd=set"
     if [ $DATASET_SIZE -eq "4G" ]; then
-        /home/gic4107/mutated/out/bin/mutated_memcache -k 20 -z 1000000 -v 4096 -u 9 127.0.0.1:4441 -s 40 $SET_RPS -n 16   # Set (4G data)
+        $HOME/OmniVisor/host/mutated/out/bin/mutated_memcache -k 20 -z 1000000 -v 4096 -u 9 127.0.0.1:4441 -s 40 $SET_RPS -n 16   # Set (4G data)
     elif [ $DATASET_SIZE -eq "8G" ]; then
-        /home/gic4107/mutated/out/bin/mutated_memcache -k 21 -z 2000000 -v 4096 -u 9 127.0.0.1:4441 -s 120 $SET_RPS -n 16  # Set (8G data)
+        $HOME/OmniVisor/host/mutated/out/bin/mutated_memcache -k 21 -z 2000000 -v 4096 -u 9 127.0.0.1:4441 -s 120 $SET_RPS -n 16  # Set (8G data)
     else
         echo "not supported dataset size"
         exit 1
@@ -58,11 +58,11 @@ else
     set
 fi
 
-#/home/gic4107/mutated/out/bin/mutated_memcache -k 20 -z 1000000 -v 4096 -u 16 127.0.0.1:4441 -s 60 40000 -n 16   # Set (4G data)
-#/home/gic4107/mutated/out/bin/mutated_memcache -k 20 -z 1000000 -v 4096 -u 0 127.0.0.1:4441 -s 120 40000 -n 16 -w 10 -c 10   # Get (4G data)
+#$HOME/OmniVisor/host/mutated/out/bin/mutated_memcache -k 20 -z 1000000 -v 4096 -u 16 127.0.0.1:4441 -s 60 40000 -n 16   # Set (4G data)
+#$HOME/OmniVisor/host/mutated/out/bin/mutated_memcache -k 20 -z 1000000 -v 4096 -u 0 127.0.0.1:4441 -s 120 40000 -n 16 -w 10 -c 10   # Get (4G data)
 
-#/home/gic4107/mutated/out/bin/mutated_memcache -k 21 -z 1572864 -v 4096 -u 16 10.147.8.2:11211 -s 120 20000 -n 16   # Set (6G data)
-#/home/gic4107/mutated/out/bin/mutated_memcache -k 21 -z 1572864 -v 4096 -u 0 10.147.8.2:11211 -s 120 20000 -n 16 -w 10 -c 10  # Get (6G data)
+#$HOME/OmniVisor/host/mutated/out/bin/mutated_memcache -k 21 -z 1572864 -v 4096 -u 16 10.147.8.2:11211 -s 120 20000 -n 16   # Set (6G data)
+#$HOME/OmniVisor/host/mutated/out/bin/mutated_memcache -k 21 -z 1572864 -v 4096 -u 0 10.147.8.2:11211 -s 120 20000 -n 16 -w 10 -c 10  # Get (6G data)
 
-#/home/gic4107/mutated/out/bin/mutated_memcache -k 21 -z 2000000 -v 4096 -u 16 127.0.0.1:4441 -s 120 40000 -n 16  # Set (8G data)
-#/home/gic4107/mutated/out/bin/mutated_memcache -k 21 -z 2000000 -v 4096 -u 0 127.0.0.1:4441 -s 120 40000 -n 16 -w 10 -c 10   # Get (8G data)
+#$HOME/OmniVisor/host/mutated/out/bin/mutated_memcache -k 21 -z 2000000 -v 4096 -u 16 127.0.0.1:4441 -s 120 40000 -n 16  # Set (8G data)
+#$HOME/OmniVisor/host/mutated/out/bin/mutated_memcache -k 21 -z 2000000 -v 4096 -u 0 127.0.0.1:4441 -s 120 40000 -n 16 -w 10 -c 10   # Get (8G data)
