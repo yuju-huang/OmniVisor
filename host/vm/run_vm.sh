@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #QEMU=qemu-system-x86_64
-QEMU=/home/gic4107/qemu/out/bin/qemu-system-x86_64
-UBUNTU_ISO=/home/gic4107/Downloads/ubuntu-18.04-desktop-amd64.iso
-#UBUNTU_ISO=/home/gic4107/Downloads/ubuntu-18.04.4-desktop-amd64.iso
+QEMU=$HOME/qemu/out/bin/qemu-system-x86_64
+UBUNTU_ISO=$HOME/Downloads/ubuntu-18.04-desktop-amd64.iso
+#UBUNTU_ISO=$HOME/gic4107/Downloads/ubuntu-18.04.4-desktop-amd64.iso
 
 if [ -z $1 ] || [ -z $2 ] || [ -z $3 ] || [ -z $4 ] || [ -z $5 ] || [ -z $6 ] || [ -z $7 ]; then 
     echo "arg1 as dsag enable; arg2 as local memory size (MB); arg3 as # of cores;
