@@ -9,7 +9,7 @@ LIBNBD_PATH=/usr/local/lib/
 ETHERNET_ADDR=nbd://128.84.139.15:9999
 INFINIBAND_ADDR=nbd://192.168.99.21:9999
 HDD_PATH=$HOME/OmniVisor/host/benchmark/fio/fio-tmp/
-SSD_PATH=/mnt/sdb
+SSD_PATH=/dev/sdb1
 
 LOOP=10
 IODEPTH=16
@@ -36,8 +36,12 @@ do
         do
             NAME=${RW}_${BS}
             echo "name="$NAME
-            LD_LIBRARY_PATH=$LIBNBD_PATH $FIO --directory=$DIRECTORY --name=$NAME --direct=1 --ramp_time=$WARMUP_TIME --time_based=1 --runtime=$TIME --rw=$RW --direct=$DIRECT --loops=$LOOP --size=$SIZE --ioengine=$IOENGINE --iodepth=$IODEPTH --bs=$BS
-            rm ${DIRECTORY}/${NAME}.0.0
+            if [ -b $DIRECTORY ]; then
+                $FIO --filename=$DIRECTORY --name=$NAME --ramp_time=$WARMUP_TIME --time_based=1 --runtime=$TIME --rw=$RW --direct=$DIRECT --loops=$LOOP --size=$SIZE --ioengine=$IOENGINE --iodepth=$IODEPTH --bs=$BS
+            else
+                $FIO --directory=$DIRECTORY --name=$NAME --ramp_time=$WARMUP_TIME --time_based=1 --runtime=$TIME --rw=$RW --direct=$DIRECT --loops=$LOOP --size=$SIZE --ioengine=$IOENGINE --iodepth=$IODEPTH --bs=$BS
+                rm ${DIRECTORY}/${NAME}.0.0
+            fi
         done
     done
 done
@@ -56,7 +60,7 @@ do
         do
             NAME=${RW}_${BS}
             echo "name="$NAME
-            LD_LIBRARY_PATH=$LIBNBD_PATH $FIO --name=$NAME --direct=1 --ramp_time=$WARMUP_TIME --time_based=1 --runtime=$TIME --rw=$RW --direct=$DIRECT --loops=$LOOP --size=$SIZE --ioengine=nbd --iodepth=$IODEPTH --bs=$BS --uri=$URI
+            LD_LIBRARY_PATH=$LIBNBD_PATH $FIO --name=$NAME --ramp_time=$WARMUP_TIME --time_based=1 --runtime=$TIME --rw=$RW --direct=$DIRECT --loops=$LOOP --size=$SIZE --ioengine=nbd --iodepth=$IODEPTH --bs=$BS --uri=$URI
         done
     done
 done
