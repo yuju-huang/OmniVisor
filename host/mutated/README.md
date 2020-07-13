@@ -30,6 +30,7 @@ Usage: ./client/mutated_synthetic [options] <ip:port> <exp. service us> <req/sec
 Options:
   -h    : help
   -r    : print raw samples
+  -f    : print frequency distribution
   -e    : use Shinjuku's epoll_spin() system call
   -w INT: warm-up seconds (default: 5s)
   -c INT: cool-down seconds (default: 5s)

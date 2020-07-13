@@ -330,11 +330,18 @@ void Client::record_sample(Generator *conn, uint64_t queue_us,
 void Client::print_summary(void)
 {
     if (cfg_.machine_readable) {
-        printf("%f\n", results_.reqps());
+        printf("reqps=%f\n", results_.reqps());
         results_.service().print_samples();
         return;
     }
+    if (cfg_.print_freq) {
+        cout << "frequency distribution begin" << endl;
+        results_.service().print_freq();
+        cout << "frequency distribution end" << endl;
+    }
+    cout << endl;
 
+    cout << "#req: " << results_.num_reqs() << endl;
     cout << "#reqs/s: hit\t\ttarget" << endl;
     printf("         %f\t%f\t\n", results_.reqps(), cfg_.req_s);
     cout << endl;

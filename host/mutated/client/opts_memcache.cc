@@ -32,6 +32,7 @@ static void __printUsage(string prog, int status = EXIT_FAILURE)
     cerr << "Common options:" << endl;
     cerr << "  -h    : help" << endl;
     cerr << "  -r    : print raw samples" << endl;
+    cerr << "  -f    : print frequency distribution" << endl;
     cerr << "  -e    : use Shinjuku's epoll_spin() system call" << endl;
     cerr << "  -b    : use busy spin for timers" << endl;
     cerr << "  -i STR: file to save inter-arrival times to" << endl;
@@ -74,12 +75,15 @@ Config parse_memcache(int argc, char *argv[])
     // unused options
     cfg.service_us = 0;
 
-    while ((c = getopt(argc, argv, "hrebi:w:s:c:W:l:m:d:n:z:k:v:u:")) != -1) {
+    while ((c = getopt(argc, argv, "hrfebi:w:s:c:W:l:m:d:n:z:k:v:u:")) != -1) {
         switch (c) {
         case 'h':
             __printUsage(argv[0], EXIT_SUCCESS);
         case 'r':
             cfg.machine_readable = true;
+            break;
+        case 'f':
+            cfg.print_freq = true;
             break;
         case 'e':
             cfg.use_epoll_spin = true;

@@ -33,6 +33,8 @@ struct Config {
     bool use_epoll_spin;   /* use the custom epoll_spin() system call */
     bool use_busy_timer;   /* busy spin for timers, not events */
 
+    bool print_freq;       /* print frequency distribution */
+
     const char *save_iatimes; /* record iatimes to a file */
 
     enum conn_modes {

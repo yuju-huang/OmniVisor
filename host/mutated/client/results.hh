@@ -72,6 +72,7 @@ class Results
     Accum &service(void) noexcept { return service_; }
     Accum &wait(void) noexcept { return wait_; }
 
+    size_t num_reqs(void) noexcept { return service_.size(); }
     double reqps(void) const noexcept { return reqps_; }
     uint64_t tx_bytes(void) const noexcept { return tx_bytes_; }
     uint64_t rx_bytes(void) const noexcept { return rx_bytes_; }

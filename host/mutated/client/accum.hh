@@ -31,6 +31,7 @@ class Accum
     void clear(void);
     void add_sample(uint64_t val);
     void print_samples(void);
+    void print_freq(void);
 
     double mean(void);
     double stddev(void);

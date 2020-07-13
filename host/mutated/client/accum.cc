@@ -2,6 +2,7 @@
 #include <cmath>
 #include <numeric>
 #include <iostream>
+#include <map>
 
 #include "accum.hh"
 
@@ -25,6 +26,22 @@ void Accum::print_samples(void)
 {
     for (auto i : samples_) {
         cout << i << endl;
+    }
+}
+
+void Accum::print_freq(void)
+{
+    std::map<uint64_t, uint64_t> map;
+    for (auto i : samples_) {
+        if (map.find(i) == map.end()) {
+            map[i] = 1;
+        } else {
+            map[i]++;
+        }
+    }
+
+    for (const auto& kv : map) {
+        cout << kv.first << ", " << kv.second << endl;
     }
 }
 
