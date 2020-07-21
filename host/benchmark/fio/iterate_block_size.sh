@@ -9,15 +9,16 @@ LIBNBD_PATH=/usr/local/lib/
 ETHERNET_ADDR=nbd://128.84.139.15:9999
 INFINIBAND_ADDR=nbd://192.168.99.21:9999
 HDD_PATH=$HOME/OmniVisor/host/benchmark/fio/fio-tmp/
-SSD_PATH=/dev/sdb1
+SSD_PATH=/dev/sdc1
 
 LOOP=10
-IODEPTH=16
+IODEPTH=128
 DIRECT=1
 SIZE=4G
 IOENGINE=libaio
-TIME=60
-WARMUP_TIME=10
+TIME=30
+WARMUP_TIME=5
+JOBS=4
 
 BLOCK_SIZES="4k 8k 16k 32k 64k 128k"
 READ_WRITES="read write randread randwrite"
@@ -37,9 +38,10 @@ do
             NAME=${RW}_${BS}
             echo "name="$NAME
             if [ -b $DIRECTORY ]; then
-                $FIO --filename=$DIRECTORY --name=$NAME --ramp_time=$WARMUP_TIME --time_based=1 --runtime=$TIME --rw=$RW --direct=$DIRECT --loops=$LOOP --size=$SIZE --ioengine=$IOENGINE --iodepth=$IODEPTH --bs=$BS
+                $FIO --filename=$DIRECTORY --name=$NAME --ramp_time=$WARMUP_TIME --time_based=1 --runtime=$TIME --rw=$RW --direct=$DIRECT --loops=$LOOP --size=$SIZE --ioengine=$IOENGINE --iodepth=$IODEPTH --bs=$BS --numjobs=$JOBS
             else
-                $FIO --directory=$DIRECTORY --name=$NAME --ramp_time=$WARMUP_TIME --time_based=1 --runtime=$TIME --rw=$RW --direct=$DIRECT --loops=$LOOP --size=$SIZE --ioengine=$IOENGINE --iodepth=$IODEPTH --bs=$BS
+                # numjobs=1 works the best for HDD
+                $FIO --directory=$DIRECTORY --name=$NAME --ramp_time=$WARMUP_TIME --time_based=1 --runtime=$TIME --rw=$RW --direct=$DIRECT --loops=$LOOP --size=$SIZE --ioengine=$IOENGINE --iodepth=$IODEPTH --bs=$BS --numjobs=1
                 rm ${DIRECTORY}/${NAME}.0.0
             fi
         done
@@ -60,7 +62,7 @@ do
         do
             NAME=${RW}_${BS}
             echo "name="$NAME
-            LD_LIBRARY_PATH=$LIBNBD_PATH $FIO --name=$NAME --ramp_time=$WARMUP_TIME --time_based=1 --runtime=$TIME --rw=$RW --direct=$DIRECT --loops=$LOOP --size=$SIZE --ioengine=nbd --iodepth=$IODEPTH --bs=$BS --uri=$URI
+            LD_LIBRARY_PATH=$LIBNBD_PATH $FIO --name=$NAME --ramp_time=$WARMUP_TIME --time_based=1 --runtime=$TIME --rw=$RW --direct=$DIRECT --loops=$LOOP --size=$SIZE --ioengine=nbd --iodepth=$IODEPTH --bs=$BS --uri=$URI --numjobs=$JOBS
         done
     done
 done

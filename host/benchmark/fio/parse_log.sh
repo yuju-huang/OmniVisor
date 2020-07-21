@@ -1,7 +1,7 @@
 #!/bin/bash
 
-cat $1 | egrep -e "path|name|BW" > tmp
-vim -c '%s/MiB/ MiB/ | %s/KiB/ KiB/ | write | quit' tmp
+cat $1 | egrep -e "path|name|bw=" > tmp
+vim -c '%s/MiB/ MiB/ | %s/KiB/ KiB/ | %s/ \+/ / | write | quit' tmp
 
 awk -F '[= _]' '
 BEGIN {
@@ -17,7 +17,7 @@ BEGIN {
         testsize=$3
     }
     else {
-        print testcase","testsize","$7","$8
+        print testcase","testsize","$4","$5
     }
 }
 END {
